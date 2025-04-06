@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <h1>用户详情</h1>
-    <el-card class="user-info">
+    <el-card class="user-info" v-loading="loading">
       <el-form label-width="100px">
         <el-form-item label="用户名">
           <span>{{ userInfo.username }}</span>
@@ -9,8 +9,14 @@
         <el-form-item label="手机号">
           <span>{{ userInfo.phone }}</span>
         </el-form-item>
+        <el-form-item label="微信昵称" v-if="userInfo.nickname">
+          <span>{{ userInfo.nickname }}</span>
+        </el-form-item>
         <el-form-item label="注册时间">
           <span>{{ userInfo.created_at }}</span>
+        </el-form-item>
+        <el-form-item label="最后登录" v-if="userInfo.last_login">
+          <span>{{ userInfo.last_login }}</span>
         </el-form-item>
       </el-form>
     </el-card>
@@ -46,7 +52,8 @@ export default {
     return {
       userId: this.$route.params.id,
       userInfo: {},
-      activeTab: 'nutrition'
+      activeTab: 'nutrition',
+      loading: false
     }
   },
   created() {
@@ -54,6 +61,7 @@ export default {
   },
   methods: {
     async fetchUserInfo() {
+      this.loading = true
       try {
         const response = await axios.get(`/users/${this.userId}`)
         this.userInfo = response.data
@@ -67,6 +75,8 @@ export default {
           phone: '13800138000',
           created_at: '2023-01-01'
         }
+      } finally {
+        this.loading = false
       }
     }
   }
