@@ -10,9 +10,11 @@ def init_db(app):
     from . import user, restaurant, recommendation, statistics, settings
     
     # Import all models to ensure they are registered with SQLAlchemy
-    from .user import User
+    from .user import User, UserProfile
     from .restaurant import Restaurant
     from .admin import Admin
+    from .food_item import FoodItem
+    from .food_record import FoodRecord
     
     with app.app_context():
         # Create all tables

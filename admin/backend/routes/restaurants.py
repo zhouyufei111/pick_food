@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from models import db
-from models.restaurant import Restaurant, FoodItem
+from models.restaurant import Restaurant
+from models.food_item import FoodItem
 from sqlalchemy import desc
 
 restaurants_bp = Blueprint('restaurants', __name__)

@@ -6,28 +6,29 @@ class User(db.Model):
     __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
+    openid = db.Column(db.String(50), unique=True, nullable=False)
+    username = db.Column(db.String(50))  # 添加username字段
+    phone = db.Column(db.String(20))     # 添加phone字段
+    nickname = db.Column(db.String(50))
+    avatar_url = db.Column(db.String(255))
+    session_key = db.Column(db.String(50))  # 添加session_key字段
+    last_login = db.Column(db.DateTime)  # 添加最后登录时间字段
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    def __init__(self, username, password, is_admin=False):
-        self.username = username
-        self.set_password(password)
-        self.is_admin = is_admin
     
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-    
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
     
     def to_dict(self):
         return {
             'id': self.id,
-            'username': self.username,
-            'is_admin': self.is_admin,
-            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            'username': self.username or self.nickname or '',  # 优先使用username，其次是nickname
+            'phone': self.phone or '',
+            'nickname': self.nickname or '',
+            'avatar_url': self.avatar_url or '',
+            'openid': self.openid,
+            'last_login': self.last_login.strftime('%Y-%m-%d %H:%M:%S') if self.last_login else None,
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
+            'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else None
         }
 
 class UserProfile(db.Model):

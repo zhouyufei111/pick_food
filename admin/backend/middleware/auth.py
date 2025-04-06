@@ -3,6 +3,9 @@ from flask import request, jsonify
 import jwt
 import os
 from models.user import User
+import dotenv
+
+dotenv.load_dotenv()
 
 def token_required(f):
     @wraps(f)
@@ -21,7 +24,8 @@ def token_required(f):
         try:
             # 解码token
             data = jwt.decode(token, os.environ.get('SECRET_KEY', 'dev_secret_key'), algorithms=['HS256'])
-            current_user = User.query.filter_by(id=data['user_id']).first()
+            print(f"解码后的数据: {data}")
+            current_user = User.query.filter_by(id=data['admin_id']).first()
             
             if not current_user:
                 return jsonify({'message': '无效的认证令牌'}), 401

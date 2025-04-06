@@ -12,6 +12,9 @@ import jwt
 
 user_bp = Blueprint('user', __name__)
 
+import dotenv
+
+dotenv.load_dotenv()
 # 微信小程序配置
 APPID = "wx150476c0c0576c07"  # 从环境变量获取，或直接填写
 SECRET = "11a935016aa6f577089b810a5dca539d"  # 从环境变量获取，或直接填写
@@ -172,6 +175,30 @@ def calculate_all_route():
     goal = data.get('goal', 'maintain')  # 默认为维持体重
     current_intake = data.get('current_intake', 0)  # 当前摄入热量，默认为0
     
+    # 从请求头中获取token
+    user_id = None
+    auth_header = request.headers.get('Authorization')
+    print(f"请求头中的Authorization: {auth_header}")
+    if auth_header:
+        token = auth_header
+        try:
+            # 解码token
+            payload = jwt.decode(token, os.environ.get('SECRET_KEY', 'your-secret-key'), algorithms=['HS256'])
+            user_id = payload.get('user_id')
+            print(f"从token中获取到用户ID: {user_id}")
+        except jwt.ExpiredSignatureError:
+            print("Token已过期")
+        except jwt.InvalidTokenError:
+            print("无效的Token")
+        except Exception as e:
+            print(f"解析Token时出错: {str(e)}")
+    
+    # 如果token中没有获取到用户ID，尝试从请求体中获取
+    if not user_id:
+        user_id = data.get('user_id')
+        if user_id:
+            print(f"从请求体中获取到用户ID: {user_id}")
+    
     try:
         # 计算BMR
         bmr = calculate_bmr(
@@ -200,7 +227,6 @@ def calculate_all_route():
         )
         
         # 如果用户已登录，保存这些计算结果
-        user_id = data.get('user_id')
         if user_id:
             # 保存所有计算结果到用户档案
             profile_data = {
@@ -217,6 +243,9 @@ def calculate_all_route():
                 'carb_target': macros['carb']
             }
             save_user_profile_data(user_id, profile_data)
+            print(f"已保存用户ID {user_id} 的营养计算结果")
+        else:
+            print("用户未登录，无法保存营养计算结果")
         
         return jsonify({
             'bmr': bmr,
